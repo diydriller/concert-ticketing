@@ -20,4 +20,7 @@ interface SeatRepository : JpaRepository<Seat, String> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Seat s WHERE s.id = :seatId ")
     fun findSeatByIdForUpdate(seatId: String): Seat?
+
+    @Query("SELECT s FROM Seat s WHERE s.id = :seatId ")
+    fun findSeatById(seatId: String): Seat?
 }

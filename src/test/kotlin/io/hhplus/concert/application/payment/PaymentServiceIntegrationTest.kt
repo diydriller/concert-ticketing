@@ -112,7 +112,6 @@ class PaymentServiceIntegrationTest : BaseIntegrationTest() {
                         )
                     )
                     successCount.incrementAndGet()
-                    print(1)
                 } catch (e: Exception) {
                     failureCount.incrementAndGet()
                 }
@@ -187,5 +186,84 @@ class PaymentServiceIntegrationTest : BaseIntegrationTest() {
                 )
             )
         }
+    }
+
+    @Test
+    fun `분산락 사용해서 임시 예약을 한 유저가 동시에 2번 결제하면 1번은 성공하고 1번은 실패한다`() {
+        // given
+        val pointId = "0JAAAVJVH0SDF"
+        val userId = "0JAAAVJVH0SDF"
+        val concertId = "0JAAAVJVH0SDF"
+        val scheduleId = "0JAAAVJVH0SDF"
+        val seatId = "0JAAAVJVH0SDF"
+        val reservationId = "0JAAAVJVH0SDF"
+        val price = 12000
+
+        val userPoint = UserPoint(
+            id = pointId,
+            userId = userId
+        )
+        userPoint.point = 300000
+        userPointRepository.save(userPoint)
+
+
+        val concert = Concert(
+            id = concertId,
+            name = "검정치마 콘서트"
+        )
+        concertRepository.save(concert)
+
+        val concertSchedule = ConcertSchedule(
+            id = scheduleId,
+            concert = concert,
+            date = LocalDateTime.of(2025, 2, 20, 18, 0),
+            totalSeatCount = 20
+        )
+        concertScheduleRepository.save(concertSchedule)
+
+        val seat = Seat(
+            id = seatId,
+            number = 1,
+            price = 12000,
+            concertSchedule = concertSchedule
+        )
+        seat.status = Seat.Status.HOLD
+        seat.holdExpiration = LocalDateTime.now().plusMinutes(3)
+        seatRepository.save(seat)
+
+        val reservation = Reservation(
+            id = reservationId,
+            concertScheduleId = scheduleId,
+            seatId = seatId,
+            userId = userId,
+            price = price
+        )
+        reservation.reserve()
+        reservationRepository.save(reservation)
+
+        // when
+        val taskCount = 2
+        val successCount = AtomicInteger(0)
+        val failureCount = AtomicInteger(0)
+        val futureArray = Array(taskCount) {
+            CompletableFuture.runAsync {
+                try {
+                    paymentService.payWithRedissonLock(
+                        PaymentCommand(
+                            userId = userId,
+                            reservationId = reservationId
+                        )
+                    )
+                    successCount.incrementAndGet()
+                } catch (e: Exception) {
+                    failureCount.incrementAndGet()
+                }
+            }
+        }
+        CompletableFuture.allOf(*futureArray).join()
+
+        // then
+        Assertions.assertEquals(1, successCount.get())
+        Assertions.assertEquals(1, failureCount.get())
     }
 }

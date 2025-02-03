@@ -11,3 +11,7 @@ storage:
       jdbc-url: jdbc:mysql://localhost:3306/testdb
       username: root
       password: rootpass
+
+redis:
+  host: localhost
+  port: 6379

@@ -43,3 +43,7 @@ storage:
         cacheServerConfiguration: true
         elideSetAutoCommits: true
         maintainTimeStats: false
+
+redis:
+  host: ${REDIS_HOST}
+  port: ${REDIS_PORT}

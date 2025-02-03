@@ -182,4 +182,61 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
         Assertions.assertEquals(1, successCount.get())
         Assertions.assertEquals(1, failureCount.get())
     }
+
+    @Test
+    fun `분산락 적용해서 2명이 동시에 같은 좌석 정보로 예약함수를 호출하면 1명만 성공하고 1명은 실패한다`() {
+        // given
+        val userIdList = listOf("4JETAVJVH0SJP", "5JETADJVH0SJP")
+        val scheduleId = "4JETAVJVH0SJP"
+        val seatId = "4JETAVJVH0SJP"
+        val concertId = "4JETAVJVH0SJP"
+
+        val concert = Concert(
+            id = concertId,
+            name = "검정치마 콘서트"
+        )
+        concertRepository.save(concert)
+
+        val concertSchedule = ConcertSchedule(
+            id = scheduleId,
+            concert = concert,
+            date = LocalDateTime.of(2025, 2, 20, 18, 0),
+            totalSeatCount = 20
+        )
+        concertScheduleRepository.save(concertSchedule)
+
+        val seat = Seat(
+            id = seatId,
+            number = 1,
+            price = 12000,
+            concertSchedule = concertSchedule
+        )
+        seatRepository.save(seat)
+
+        // when
+        val taskCount = 2
+        val successCount = AtomicInteger(0)
+        val failureCount = AtomicInteger(0)
+        val futureArray = Array(taskCount) { index ->
+            CompletableFuture.runAsync {
+                try {
+                    reservationService.reserveConcertWithRedissonLock(
+                        ReservationCommand(
+                            userIdList[index % userIdList.size],
+                            scheduleId,
+                            seatId
+                        )
+                    )
+                    successCount.incrementAndGet()
+                } catch (e: Exception) {
+                    failureCount.incrementAndGet()
+                }
+            }
+        }
+        CompletableFuture.allOf(*futureArray).join()
+
+        // then
+        Assertions.assertEquals(1, successCount.get())
+        Assertions.assertEquals(1, failureCount.get())
+    }
 }

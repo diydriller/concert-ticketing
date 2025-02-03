@@ -1,9 +1,6 @@
 package io.hhplus.concert.application.reservation
 
-import io.hhplus.concert.domain.concert.Concert
-import io.hhplus.concert.domain.concert.ConcertReader
-import io.hhplus.concert.domain.concert.ConcertSchedule
-import io.hhplus.concert.domain.concert.Seat
+import io.hhplus.concert.domain.concert.*
 import io.hhplus.concert.domain.reservation.Reservation
 import io.hhplus.concert.domain.reservation.ReservationDomainService
 import io.hhplus.concert.domain.reservation.ReservationStore
@@ -29,6 +26,9 @@ class ReservationServiceUnitTest {
 
     @Mock
     private lateinit var concertReader: ConcertReader
+
+    @Mock
+    private lateinit var concertStore: ConcertStore
 
     @Mock
     private lateinit var reservationDomainService: ReservationDomainService
