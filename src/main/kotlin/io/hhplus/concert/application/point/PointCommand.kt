@@ -9,4 +9,9 @@ class PointCommand {
         val userId: String,
         val point: Int
     )
+
+    data class UsePoint(
+        val userId: String,
+        val point: Int
+    )
 }

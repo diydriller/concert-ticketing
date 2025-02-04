@@ -16,7 +16,7 @@ class ReservationController(
         @RequestBody request: ReservationRequest.ReserveConcert,
         @RequestHeader userId: String
     ): ResponseEntity<BaseResponse<ReservationResponse.ReserveConcert>> {
-        val reservation = reservationService.reserveConcert(request.toCommand(userId))
+        val reservation = reservationService.reserveConcertWithPessimisticLock(request.toCommand(userId))
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
             BaseResponse(

@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 
 @Component
 class ReservationDomainService(
-    private val reservationReader: ReservationReader,
+    private val reservationReader: ReservationReader
 ) {
     fun reserve(seat: Seat, reservation: Reservation, userId: String, scheduleId: String) {
         reservationReader.findReservation(userId, scheduleId, seat.id)?.let { savedReservation ->
@@ -29,7 +29,7 @@ class ReservationDomainService(
         reservation.reserve()
     }
 
-    fun complete(seat: Seat, reservation: Reservation, concertSchedule: ConcertSchedule) {
+    fun complete(seat: Seat, concertSchedule: ConcertSchedule, reservation: Reservation) {
         if (!isHolding(seat)) {
             seat.expire()
             throw ConflictException(BaseResponseStatus.NOT_HOLDING_SEAT)
