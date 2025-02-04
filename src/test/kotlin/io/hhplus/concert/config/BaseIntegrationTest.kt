@@ -14,7 +14,7 @@ import org.testcontainers.utility.DockerImageName
 abstract class BaseIntegrationTest {
     companion object {
         @Container
-        private val mysqlContainer = MySQLContainer<Nothing>("mysql:8.0").apply {
+        private val mysqlContainer = MySQLContainer<Nothing>("mysql:8.0.35").apply {
             withDatabaseName("testdb")
             withUsername("root")
             withPassword("rootpass")

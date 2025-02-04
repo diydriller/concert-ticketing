@@ -3,6 +3,7 @@ package io.hhplus.concert.application.reservation
 import io.hhplus.concert.domain.concert.*
 import io.hhplus.concert.domain.reservation.Reservation
 import io.hhplus.concert.domain.reservation.ReservationDomainService
+import io.hhplus.concert.domain.reservation.ReservationReader
 import io.hhplus.concert.domain.reservation.ReservationStore
 import io.hhplus.concert.exception.NotFoundException
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,6 +23,9 @@ class ReservationServiceUnitTest {
     private lateinit var reservationService: ReservationService
 
     @Mock
+    private lateinit var reservationReader: ReservationReader
+
+    @Mock
     private lateinit var reservationStore: ReservationStore
 
     @Mock
@@ -34,7 +38,7 @@ class ReservationServiceUnitTest {
     private lateinit var reservationDomainService: ReservationDomainService
 
     @Test
-    fun `예약 함수 호출시 콘서트 스케줄이 존재하지 않으면 NotFoundException이 발생한다`() {
+    fun `임시 예약시 콘서트 스케줄이 존재하지 않으면 NotFoundException이 발생한다`() {
         // given
         val userId = "0JETAVJVH0SJQ"
         val scheduleId = "0JETAVJVH0SJQ"
@@ -44,7 +48,7 @@ class ReservationServiceUnitTest {
 
         // when & then
         assertThrows(NotFoundException::class.java) {
-            reservationService.reserveConcert(
+            reservationService.reserveConcertWithPessimisticLock(
                 ReservationCommand(
                     userId = userId,
                     scheduleId = scheduleId,
@@ -55,7 +59,7 @@ class ReservationServiceUnitTest {
     }
 
     @Test
-    fun `예약 함수 호출시 좌석이 존재하지 않으면 NotFoundException이 발생한다`() {
+    fun `임시 예약시 좌석이 존재하지 않으면 NotFoundException이 발생한다`() {
         // given
         val userId = "0JETAVJVH0SJQ"
         val scheduleId = "0JETAVJVH0SJQ"
@@ -80,7 +84,7 @@ class ReservationServiceUnitTest {
 
         // when & then
         assertThrows(NotFoundException::class.java) {
-            reservationService.reserveConcert(
+            reservationService.reserveConcertWithPessimisticLock(
                 ReservationCommand(
                     userId = userId,
                     scheduleId = scheduleId,
@@ -91,7 +95,7 @@ class ReservationServiceUnitTest {
     }
 
     @Test
-    fun `예약함수가 정상적으로 호출시 예약 정보가 알맞은 Reservation을 반환한다`() {
+    fun `임시 예약 함수를 호출하면 예약 정보가 알맞은 Reservation을 반환한다`() {
         // given
         val userId = "0JETAVJVH0SJQ"
         val scheduleId = "0JETAVJVH0SJQ"
@@ -134,7 +138,7 @@ class ReservationServiceUnitTest {
         `when`(reservationStore.saveReservation(any())).then { reservation }
 
         // when & then
-        val savedReservation = reservationService.reserveConcert(
+        val savedReservation = reservationService.reserveConcertWithPessimisticLock(
             ReservationCommand(
                 userId = userId,
                 scheduleId = scheduleId,
@@ -145,5 +149,95 @@ class ReservationServiceUnitTest {
         assertEquals(userId, savedReservation.userId)
         assertEquals(seatId, savedReservation.seatId)
         assertEquals(scheduleId, savedReservation.concertScheduleId)
+    }
+
+    @Test
+    fun `예약 확정시 임시 예약 내역이 없으면 NotFoundException이 발생한다`() {
+        // given
+        val reservationId = "0JETAVJVH0SJQ"
+
+        `when`(reservationReader.findReservationForUpdate(reservationId)).then { null }
+
+        // when & then
+        assertThrows(NotFoundException::class.java) {
+            reservationService.completeReservationWithPessimisticLock(reservationId)
+        }
+    }
+
+
+    @Test
+    fun `예약 확정시 좌석이 없으면 NotFoundException이 발생한다`() {
+        // given
+        val userId = "0JETAVJVH0SJQ"
+        val reservationId = "0JETAVJVH0SJQ"
+        val scheduleId = "0JETAVJVH0SJQ"
+        val seatId = "0JETAVJVH0SJQ"
+        val price = 12000
+
+        val reservation = Reservation(
+            id = reservationId,
+            concertScheduleId = scheduleId,
+            seatId = seatId,
+            userId = userId,
+            price = price
+        )
+
+        `when`(reservationReader.findReservationForUpdate(reservationId)).then { reservation }
+
+        `when`(concertReader.findSeatForUpdate(seatId)).then { null }
+
+        // when & then
+        assertThrows(NotFoundException::class.java) {
+            reservationService.completeReservationWithPessimisticLock(reservationId)
+        }
+    }
+
+    @Test
+    fun `예약 확정시 콘서트 스케줄이 없으면 NotFoundExeption이 발생한다`() {
+        // given
+        val userId = "0JETAVJVH0SJQ"
+        val reservationId = "0JETAVJVH0SJQ"
+        val scheduleId = "0JETAVJVH0SJQ"
+        val seatId = "0JETAVJVH0SJQ"
+        val price = 12000
+        val concertId = "0JETAVJVH0SJQ"
+
+        val concert = Concert(
+            id = concertId,
+            name = "검정치마 콘서트"
+        )
+
+        val reservation = Reservation(
+            id = reservationId,
+            concertScheduleId = scheduleId,
+            seatId = seatId,
+            userId = userId,
+            price = price
+        )
+
+        val concertSchedule = ConcertSchedule(
+            id = scheduleId,
+            concert = concert,
+            date = LocalDateTime.of(2025, 2, 20, 18, 0),
+            totalSeatCount = 20
+        )
+
+        val seat = Seat(
+            id = seatId,
+            number = 1,
+            price = 12000,
+            concertSchedule = concertSchedule
+        )
+
+        `when`(reservationReader.findReservationForUpdate(reservationId)).then { reservation }
+
+        `when`(concertReader.findSeatForUpdate(seatId)).then { seat }
+
+        `when`(concertReader.findConcertScheduleForUpdate(scheduleId)).then { null }
+
+        // when & then
+        assertThrows(NotFoundException::class.java) {
+            reservationService.completeReservationWithPessimisticLock(reservationId)
+        }
     }
 }

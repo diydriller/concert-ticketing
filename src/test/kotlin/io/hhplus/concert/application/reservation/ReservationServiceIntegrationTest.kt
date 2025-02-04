@@ -63,7 +63,7 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
         seatRepository.save(seat)
 
         // when
-        val reservation = reservationService.reserveConcert(
+        val reservation = reservationService.reserveConcertWithPessimisticLock(
             ReservationCommand(
                 userId = userId,
                 scheduleId = scheduleId,
@@ -77,7 +77,7 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
     }
 
     @Test
-    fun `같은 예약정보로 예약함수 2번 호출시 ConflictException이 발생한다`() {
+    fun `같은 예약정보로 예약함수 2번 호출시 ConflictException이 발생한다 (비관적락 적용)`() {
         // given
         val userId = "0JETAVJVH0SJK"
         val scheduleId = "0JETAVJVH0SJK"
@@ -107,7 +107,7 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
         seatRepository.save(seat)
 
         // when
-        reservationService.reserveConcert(
+        reservationService.reserveConcertWithPessimisticLock(
             ReservationCommand(
                 userId = userId,
                 scheduleId = scheduleId,
@@ -116,7 +116,7 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
         )
 
         assertThrows(ConflictException::class.java) {
-            reservationService.reserveConcert(
+            reservationService.reserveConcertWithPessimisticLock(
                 ReservationCommand(
                     userId = userId,
                     scheduleId = scheduleId,
@@ -127,7 +127,7 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
     }
 
     @Test
-    fun `2명이 동시에 같은 좌석 정보로 예약함수를 호출하면 1명만 성공하고 1명은 실패한다`() {
+    fun `2명이 동시에 같은 좌석 정보로 예약함수를 호출하면 1명만 성공하고 1명은 실패한다 (비관적락 적용)`() {
         // given
         val userIdList = listOf("0JETAVJVH0SJP", "0JETADJVH0SJP")
         val scheduleId = "0JETAVJVH0SJP"
@@ -163,7 +163,7 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
         val futureArray = Array(taskCount) { index ->
             CompletableFuture.runAsync {
                 try {
-                    reservationService.reserveConcert(
+                    reservationService.reserveConcertWithPessimisticLock(
                         ReservationCommand(
                             userIdList[index % userIdList.size],
                             scheduleId,
@@ -184,7 +184,7 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
     }
 
     @Test
-    fun `분산락 적용해서 2명이 동시에 같은 좌석 정보로 예약함수를 호출하면 1명만 성공하고 1명은 실패한다`() {
+    fun `2명이 동시에 같은 좌석 정보로 예약함수를 호출하면 1명만 성공하고 1명은 실패한다 (분산락 적용)`() {
         // given
         val userIdList = listOf("4JETAVJVH0SJP", "5JETADJVH0SJP")
         val scheduleId = "4JETAVJVH0SJP"
@@ -220,7 +220,7 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
         val futureArray = Array(taskCount) { index ->
             CompletableFuture.runAsync {
                 try {
-                    reservationService.reserveConcertWithRedissonLock(
+                    reservationService.reserveConcertWithDistributedLock(
                         ReservationCommand(
                             userIdList[index % userIdList.size],
                             scheduleId,
