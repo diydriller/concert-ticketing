@@ -44,4 +44,8 @@ class ConcertReaderImpl(
     override fun findConcertScheduleForUpdate(scheduleId: String): ConcertSchedule? {
         return concertScheduleRepository.findConcertScheduleByIdForUpdate(scheduleId)
     }
+
+    override fun findConcertList(): List<Concert> {
+        return concertRepository.findAll()
+    }
 }

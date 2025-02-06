@@ -5,5 +5,11 @@ interface QueueReader {
 
     fun getQueueTokenOrder(tokenId: String): Int
 
-    fun getInActiveQueueTokenList(num: Int): List<QueueToken>
+    fun getWaitingQueueTokenList(num: Int): List<QueueToken>
+
+    fun getRedisQueueTokenOrder(tokenId: String): Int?
+
+    fun getWaitingRedisQueueTokenIdList(num: Int): List<String>
+
+    fun getActiveRedisQueueToken(tokenId: String): String?
 }

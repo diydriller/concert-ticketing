@@ -19,5 +19,5 @@ interface QueueTokenRepository : JpaRepository<QueueToken, String> {
         "SELECT qt FROM QueueToken qt " +
                 "WHERE qt.status = 'INACTIVE'"
     )
-    fun getInActiveQueueTokenList(pageable: Pageable): List<QueueToken>
+    fun getAllInActiveQueueToken(pageable: Pageable): List<QueueToken>
 }

@@ -16,7 +16,7 @@ class PaymentController(
         @RequestHeader userId: String,
         @RequestBody request: PaymentRequest.Pay
     ): BaseResponse<Unit> {
-        paymentService.pay(PaymentCommand(
+        paymentService.payWithPessimisticLock(PaymentCommand(
             userId = userId,
             reservationId = request.reservationId)
         )

@@ -17,4 +17,6 @@ interface ConcertReader {
     fun findSeat(seatId: String): Seat?
 
     fun findConcertScheduleForUpdate(scheduleId: String): ConcertSchedule?
+
+    fun findConcertList(): List<Concert>
 }

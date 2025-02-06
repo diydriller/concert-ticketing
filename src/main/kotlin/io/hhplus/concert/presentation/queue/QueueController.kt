@@ -15,8 +15,8 @@ class QueueController(
     fun publishQueueToken(
         @RequestHeader userId: String
     ): ResponseEntity<BaseResponse<QueueResponse.GetQueueTokenInfo>> {
-        val queueToken = queueService.publishQueueToken(userId)
-        val response = QueueResponse.GetQueueTokenInfo.fromEntity(queueToken)
+        val queueToken = queueService.publishRedisQueueToken(userId)
+        val response = QueueResponse.GetQueueTokenInfo.fromRedisQueueToken(queueToken)
         return ResponseEntity.status(HttpStatus.CREATED).body(
             BaseResponse(response)
         )
@@ -26,8 +26,8 @@ class QueueController(
     fun getQueueToken(
         @RequestHeader tokenId: String
     ): ResponseEntity<BaseResponse<QueueResponse.GetQueueTokenOrderInfo>> {
-        val queueTokenOrderInfo = queueService.getQueueToken(tokenId)
-        val response = QueueResponse.GetQueueTokenOrderInfo.fromInfo(queueTokenOrderInfo)
+        val queueTokenOrderInfo = queueService.getWaitingRedisQueueTokenInfo(tokenId)
+        val response = QueueResponse.GetQueueTokenOrderInfo.fromQueueTokenInfo(queueTokenOrderInfo)
         return ResponseEntity.ok().body(
             BaseResponse(response)
         )

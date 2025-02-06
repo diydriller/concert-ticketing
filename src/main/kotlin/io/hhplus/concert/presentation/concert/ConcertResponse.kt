@@ -1,5 +1,6 @@
 package io.hhplus.concert.presentation.concert
 
+import io.hhplus.concert.domain.concert.Concert
 import io.hhplus.concert.domain.concert.ConcertSchedule
 import io.hhplus.concert.domain.concert.Seat
 
@@ -29,6 +30,20 @@ class ConcertResponse {
                     id = seat.id,
                     number = seat.number,
                     price = seat.price
+                )
+            }
+        }
+    }
+
+    data class GetConcertInfo(
+        val id: String,
+        val name: String
+    ) {
+        companion object {
+            fun fromEntity(concert: Concert): GetConcertInfo {
+                return GetConcertInfo(
+                    id = concert.id,
+                    name = concert.name
                 )
             }
         }
