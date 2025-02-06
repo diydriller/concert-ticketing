@@ -9,3 +9,5 @@
 ## [회고 문서](./retrospect.md)
 
 ## [동시성 제어](./lock.md)
+
+## [redis 적용](./redis.md)
