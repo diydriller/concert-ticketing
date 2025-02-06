@@ -1,6 +1,8 @@
 package io.hhplus.concert.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.redisson.Redisson
 import org.redisson.api.RedissonClient
 import org.redisson.config.Config
@@ -20,7 +22,7 @@ class RedisConfig(
     @Value("\${redis.host}")
     private val redisHost: String,
     @Value("\${redis.port}")
-    private val redisPort: Int,
+    private val redisPort: Int
 ) {
     @Bean
     fun redissonClient(): RedissonClient {
@@ -41,11 +43,23 @@ class RedisConfig(
 
 
     @Bean
-    fun redisTemplate(): RedisTemplate<String, String> {
-        val redisTemplate = RedisTemplate<String, String>()
+    fun redisTemplate(): RedisTemplate<String, Any> {
+        val redisTemplate = RedisTemplate<String, Any>()
         redisTemplate.connectionFactory = redisConnectionFactory()
         redisTemplate.keySerializer = StringRedisSerializer()
-        redisTemplate.valueSerializer = StringRedisSerializer()
+        redisTemplate.valueSerializer = GenericJackson2JsonRedisSerializer(redisObjectMapper())
         return redisTemplate
+    }
+
+    private fun redisObjectMapper(): ObjectMapper {
+        val objectMapper = ObjectMapper()
+        objectMapper.registerModule(JavaTimeModule())
+        objectMapper.activateDefaultTyping(
+            BasicPolymorphicTypeValidator.builder()
+                .allowIfSubType(Any::class.java)
+                .build(),
+            ObjectMapper.DefaultTyping.NON_FINAL
+        )
+        return objectMapper
     }
 }
