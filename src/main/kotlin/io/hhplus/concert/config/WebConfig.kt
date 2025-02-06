@@ -10,6 +10,7 @@ class WebConfig(
     private val redisTokenValidationInterceptor: RedisTokenValidationInterceptor
 ) : WebMvcConfigurer {
     private val excludedPaths = listOf(
+        "/concert",
         "/concert/**",
         "/queue/**",
         "/point/**"
