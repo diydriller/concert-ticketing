@@ -1,6 +1,6 @@
 package io.hhplus.concert.infrastructure.concert
 
-import io.hhplus.concert.domain.concert.ConcertSchedule
+import io.hhplus.concert.domain.concert.Concert
 import io.hhplus.concert.domain.concert.Seat
 import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
@@ -11,11 +11,12 @@ import java.time.LocalDate
 interface SeatRepository : JpaRepository<Seat, String> {
     @Query(
         "SELECT s FROM Seat s JOIN s.concertSchedule sc " +
-                "WHERE s.concertSchedule = :schedule " +
+                "JOIN sc.concert c " +
+                "WHERE c = :concert " +
                 "AND FUNCTION('DATE', sc.date) = :date " +
                 "AND sc.reservedSeatCount < sc.totalSeatCount "
     )
-    fun findReservableSeat(schedule: ConcertSchedule, date: LocalDate): List<Seat>
+    fun findReservableSeat(concert: Concert, date: LocalDate): List<Seat>
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Seat s WHERE s.id = :seatId ")
