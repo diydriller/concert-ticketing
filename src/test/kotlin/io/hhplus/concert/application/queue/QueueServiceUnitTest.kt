@@ -27,7 +27,7 @@ class QueueServiceUnitTest {
     private lateinit var userReader: UserReader
 
     @Test
-    fun `토큰 생성함수 호출시 저장된 유저가 없으면 NotFoundException이 발생한다`() {
+    fun `토큰 생성시 저장된 유저가 없으면 NotFoundException이 발생한다`() {
         // given
         val userId = "0JETAVJVH0SJQ"
 
@@ -40,7 +40,7 @@ class QueueServiceUnitTest {
     }
 
     @Test
-    fun `토큰 조회함수 호출시 저장된 토큰이 없으면 NotFoundException이 발생한다`() {
+    fun `토큰 조회시 저장된 토큰이 없으면 NotFoundException이 발생한다`() {
         // given
         val tokenId = "0JETAVJVH0SJQ"
 
@@ -48,7 +48,7 @@ class QueueServiceUnitTest {
 
         // when & then
         assertThrows(NotFoundException::class.java) {
-            queueService.getQueueToken(tokenId)
+            queueService.getWaitingQueueTokenInfo(tokenId)
         }
     }
 }

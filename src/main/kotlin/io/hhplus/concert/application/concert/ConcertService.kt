@@ -1,5 +1,7 @@
 package io.hhplus.concert.application.concert
 
+import io.hhplus.concert.aop.cache.Cache
+import io.hhplus.concert.domain.concert.Concert
 import io.hhplus.concert.domain.concert.ConcertReader
 import io.hhplus.concert.domain.concert.ConcertSchedule
 import io.hhplus.concert.domain.concert.Seat
@@ -25,5 +27,10 @@ class ConcertService(
         val schedule = concertReader.findConcertSchedule(scheduleId)
             ?: throw NotFoundException(BaseResponseStatus.NOT_FOUND_CONCERT_SCHEDULE)
         return concertReader.findReservableSeat(schedule, date)
+    }
+
+    @Cache(key = "concert")
+    fun getConcert(): List<Concert> {
+        return concertReader.findConcertList()
     }
 }

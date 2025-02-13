@@ -9,10 +9,10 @@ import java.time.LocalDateTime
 @Entity
 class QueueToken(
     @Id
-    val id: String = TsidCreator.getTsid().toString(),
-    val userId: String,
-    val expiration: LocalDateTime,
+    val id: String = TsidCreator.getTsid().toString()
 ) : BaseModel() {
+    var expiration: LocalDateTime? = null
+
     @Enumerated(EnumType.STRING)
     var status: Status = Status.INACTIVE
 
@@ -22,13 +22,15 @@ class QueueToken(
 
     fun activate() {
         this.status = Status.ACTIVE
+        this.expiration = LocalDateTime.now().plusMinutes(10)
     }
 
-    fun deactivate(){
+    fun deactivate() {
         this.status = Status.INACTIVE
+        this.expiration = null
     }
 
     fun isValid(): Boolean {
-        return status == Status.ACTIVE && expiration.isAfter(LocalDateTime.now())
+        return status == Status.ACTIVE && expiration!!.isAfter(LocalDateTime.now())
     }
 }

@@ -7,6 +7,7 @@ import io.hhplus.concert.domain.concert.ConcertSchedule
 import io.hhplus.concert.domain.concert.Seat
 import io.hhplus.concert.domain.point.UserPoint
 import io.hhplus.concert.domain.queue.QueueToken
+import io.hhplus.concert.domain.queue.RedisQueueToken
 import io.hhplus.concert.domain.reservation.Reservation
 import io.hhplus.concert.infrastructure.concert.ConcertRepository
 import io.hhplus.concert.infrastructure.concert.ConcertScheduleRepository
@@ -15,16 +16,19 @@ import io.hhplus.concert.infrastructure.point.UserPointRepository
 import io.hhplus.concert.infrastructure.queue.QueueTokenRepository
 import io.hhplus.concert.infrastructure.reservation.ReservationRepository
 import io.hhplus.concert.presentation.payment.PaymentRequest
+import io.hhplus.concert.util.StringUtil.Companion.ACTIVE_QUEUE_KEY_PREFIX
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.time.Duration
 import java.time.LocalDateTime
 
 @AutoConfigureMockMvc
@@ -52,10 +56,10 @@ class QueueControllerIntegrationTest : BaseIntegrationTest() {
     private lateinit var concertRepository: ConcertRepository
 
     @Autowired
-    private lateinit var queueTokenRepository: QueueTokenRepository
+    private lateinit var redisTemplate: RedisTemplate<String, String>
 
     @Test
-    fun `결제까지 완료하면 대기열 토큰은 비활성화된다`() {
+    fun `결제까지 완료하면 대기열 토큰은 비활성화된다 (redis 사용)`() {
         // given
         val tokenId = "0JETAVJVH0SVV"
         val pointId = "0JETAVJVH0SVV"
@@ -66,13 +70,9 @@ class QueueControllerIntegrationTest : BaseIntegrationTest() {
         val reservationId = "0JETAVJVH0SVV"
         val price = 12000
 
-        val queueToken = QueueToken(
-            id = tokenId,
-            userId = userId,
-            expiration = LocalDateTime.now().plusMinutes(10)
-        )
-        queueToken.activate()
-        queueTokenRepository.save(queueToken)
+        val key = ACTIVE_QUEUE_KEY_PREFIX + tokenId
+        redisTemplate.opsForHash<String, String>().put(key, "token", tokenId)
+        redisTemplate.expire(key, Duration.ofSeconds(600))
 
         val userPoint = UserPoint(
             id = pointId,
@@ -120,6 +120,7 @@ class QueueControllerIntegrationTest : BaseIntegrationTest() {
         )
         val requestJson = objectMapper.writeValueAsString(paymentRequest)
 
+        // when
         mockMvc.perform(
             post("/payment")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,17 +130,10 @@ class QueueControllerIntegrationTest : BaseIntegrationTest() {
         )
             .andExpect(status().isOk)
 
-        mockMvc.perform(
-            get("/queue/status")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson)
-                .header("tokenId", tokenId)
-        )
-            .andExpect(status().isOk)
+        //then
+        val exist = redisTemplate.opsForHash<String, String>().entries(key)["token"] != null
 
-        val savedQueueToken = queueTokenRepository.findById(tokenId).get()
-
-        assertEquals(savedQueueToken.status, QueueToken.Status.INACTIVE)
+        assertEquals(exist, false)
     }
 
 }

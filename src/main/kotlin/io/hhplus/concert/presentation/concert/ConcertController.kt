@@ -12,6 +12,19 @@ import java.time.LocalDate
 class ConcertController(
     private val concertService: ConcertService
 ) {
+    @GetMapping
+    fun getConcert(): ResponseEntity<List<ConcertResponse.GetConcertInfo>>{
+        val concertList = concertService.getConcert()
+
+        val concertResponse = concertList.map { concert ->
+            ConcertResponse.GetConcertInfo.fromEntity(concert)
+        }.toList()
+
+        return ResponseEntity.ok().body(
+            concertResponse
+        )
+    }
+
     @GetMapping("/{concertId}/schedule")
     fun getConcertSchedule(
         @PathVariable concertId: String,

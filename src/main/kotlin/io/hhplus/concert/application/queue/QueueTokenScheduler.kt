@@ -15,13 +15,21 @@ class QueueTokenScheduler(
         const val ACTIVATE_TOKEN_NUM = 10
     }
 
-    @Scheduled(fixedRate = 30000)
     @Transactional
     fun activateQueueToken() {
-        queueReader.getInActiveQueueTokenList(ACTIVATE_TOKEN_NUM)
+        queueReader.getWaitingQueueTokenList(ACTIVATE_TOKEN_NUM)
             .forEach { token ->
                 token.activate()
                 queueStore.saveQueueToken(token)
+            }
+    }
+
+    @Scheduled(fixedRate = 300000)
+    @Transactional
+    fun activateRedisQueueToken() {
+        queueReader.getWaitingRedisQueueTokenIdList(ACTIVATE_TOKEN_NUM)
+            .forEach { tokenId ->
+                queueStore.activateRedisQueueTokenId(tokenId)
             }
     }
 }
