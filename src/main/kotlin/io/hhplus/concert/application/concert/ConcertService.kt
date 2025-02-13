@@ -21,12 +21,10 @@ class ConcertService(
         return concertReader.findReservableConcertSchedule(concert, page, size)
     }
 
-    fun getConcertSeat(concertId: String, scheduleId: String, date: LocalDate): List<Seat> {
-        concertReader.findConcert(concertId)
+    fun getConcertSeat(concertId: String, date: LocalDate): List<Seat> {
+        val concert = concertReader.findConcert(concertId)
             ?: throw NotFoundException(BaseResponseStatus.NOT_FOUND_CONCERT)
-        val schedule = concertReader.findConcertSchedule(scheduleId)
-            ?: throw NotFoundException(BaseResponseStatus.NOT_FOUND_CONCERT_SCHEDULE)
-        return concertReader.findReservableSeat(schedule, date)
+        return concertReader.findReservableSeat(concert, date)
     }
 
     @Cache(key = "concert")

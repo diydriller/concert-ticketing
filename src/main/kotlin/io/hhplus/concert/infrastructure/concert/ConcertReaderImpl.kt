@@ -29,8 +29,8 @@ class ConcertReaderImpl(
         return concertScheduleRepository.findConcertScheduleById(scheduleId)
     }
 
-    override fun findReservableSeat(schedule: ConcertSchedule, date: LocalDate): List<Seat> {
-        return seatRepository.findReservableSeat(schedule, date)
+    override fun findReservableSeat(concert: Concert, date: LocalDate): List<Seat> {
+        return seatRepository.findReservableSeat(concert, date)
     }
 
     override fun findSeatForUpdate(seatId: String): Seat? {

@@ -31,7 +31,7 @@ class QueueServiceUnitTest {
         // given
         val userId = "0JETAVJVH0SJQ"
 
-        `when`(userReader.findUser(userId)).then { null }
+        `when`(userReader.isExistUser(userId)).then { false }
 
         // when & then
         assertThrows(NotFoundException::class.java) {

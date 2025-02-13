@@ -16,7 +16,9 @@ class QueueService(
     private val userReader: UserReader
 ) {
     fun publishQueueToken(userId: String): QueueToken {
-        userReader.findUser(userId) ?: throw NotFoundException(BaseResponseStatus.NOT_FOUND_USER)
+        if(!userReader.isExistUser(userId)) {
+            throw NotFoundException(BaseResponseStatus.NOT_FOUND_USER)
+        }
         val queueToken = QueueToken()
         return queueStore.saveQueueToken(queueToken)
     }
@@ -32,7 +34,9 @@ class QueueService(
     }
 
     fun publishRedisQueueToken(userId: String): RedisQueueToken {
-        userReader.findUser(userId) ?: throw NotFoundException(BaseResponseStatus.NOT_FOUND_USER)
+        if(!userReader.isExistUser(userId)) {
+            throw NotFoundException(BaseResponseStatus.NOT_FOUND_USER)
+        }
         val redisQueueToken = RedisQueueToken()
         queueStore.saveRedisQueueTokenId(redisQueueToken.id)
         return redisQueueToken
