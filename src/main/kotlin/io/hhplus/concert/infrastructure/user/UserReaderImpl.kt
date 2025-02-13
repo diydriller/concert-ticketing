@@ -7,8 +7,12 @@ import org.springframework.stereotype.Component
 @Component
 class UserReaderImpl(
     private val userRepository: UserRepository
-) : UserReader{
+) : UserReader {
     override fun findUser(userId: String): User? {
         return userRepository.findUserById(userId)
+    }
+
+    override fun isExistUser(userId: String): Boolean {
+        return userRepository.existUserById(userId) != null
     }
 }
