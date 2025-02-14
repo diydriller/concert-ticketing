@@ -104,7 +104,7 @@ class ConcertServiceIntegrationTest : BaseIntegrationTest() {
         seatRepository.save(seat2)
 
         // when
-        val seatList = concertService.getConcertSeat(concertId, scheduleId, LocalDate.of(2025, 2, 20))
+        val seatList = concertService.getConcertSeat(concertId, LocalDate.of(2025, 2, 20))
 
         // then
         assertEquals(2, seatList.size)
