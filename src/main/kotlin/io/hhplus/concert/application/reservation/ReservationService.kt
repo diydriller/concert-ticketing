@@ -3,10 +3,7 @@ package io.hhplus.concert.application.reservation
 import io.hhplus.concert.aop.lock.DistributedLock
 import io.hhplus.concert.domain.concert.ConcertReader
 import io.hhplus.concert.domain.concert.ConcertStore
-import io.hhplus.concert.domain.reservation.Reservation
-import io.hhplus.concert.domain.reservation.ReservationDomainService
-import io.hhplus.concert.domain.reservation.ReservationReader
-import io.hhplus.concert.domain.reservation.ReservationStore
+import io.hhplus.concert.domain.reservation.*
 import io.hhplus.concert.exception.NotFoundException
 import io.hhplus.concert.response.BaseResponseStatus
 import jakarta.transaction.Transactional
@@ -18,7 +15,8 @@ class ReservationService(
     private val concertReader: ConcertReader,
     private val concertStore: ConcertStore,
     private val reservationReader: ReservationReader,
-    private val reservationDomainService: ReservationDomainService
+    private val reservationDomainService: ReservationDomainService,
+    private val reservationEventPublisher: ReservationEventPublisher
 ) {
     @Transactional
     fun reserveConcertWithPessimisticLock(command: ReservationCommand): Reservation {
@@ -39,6 +37,8 @@ class ReservationService(
 
         concertStore.saveSeat(seat)
         reservationStore.saveReservation(reservation)
+
+        reservationEventPublisher.publish(ReservationEvent.Reserve(reservation.id))
 
         return reservationStore.saveReservation(reservation)
     }
