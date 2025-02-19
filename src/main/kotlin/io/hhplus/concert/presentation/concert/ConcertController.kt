@@ -13,7 +13,7 @@ class ConcertController(
     private val concertService: ConcertService
 ) {
     @GetMapping
-    fun getConcert(): ResponseEntity<List<ConcertResponse.GetConcertInfo>>{
+    fun getConcert(): ResponseEntity<List<ConcertResponse.GetConcertInfo>> {
         val concertList = concertService.getConcert()
 
         val concertResponse = concertList.map { concert ->
@@ -48,13 +48,12 @@ class ConcertController(
         )
     }
 
-    @GetMapping("/{concertId}/schedule/{scheduleId}/seat")
+    @GetMapping("/{concertId}/seat")
     fun getConcertSeat(
         @PathVariable concertId: String,
-        @PathVariable scheduleId: String,
         @RequestParam date: String
     ): ResponseEntity<BaseResponse<List<ConcertResponse.GetSeatInfo>>> {
-        val seatResponse = concertService.getConcertSeat(concertId, scheduleId, LocalDate.parse(date))
+        val seatResponse = concertService.getConcertSeat(concertId, LocalDate.parse(date))
             .map { seat ->
                 ConcertResponse.GetSeatInfo.fromEntity(seat)
             }.toList()

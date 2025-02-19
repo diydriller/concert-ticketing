@@ -1,10 +1,7 @@
 package io.hhplus.concert.application.reservation
 
 import io.hhplus.concert.domain.concert.*
-import io.hhplus.concert.domain.reservation.Reservation
-import io.hhplus.concert.domain.reservation.ReservationDomainService
-import io.hhplus.concert.domain.reservation.ReservationReader
-import io.hhplus.concert.domain.reservation.ReservationStore
+import io.hhplus.concert.domain.reservation.*
 import io.hhplus.concert.exception.NotFoundException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -36,6 +33,9 @@ class ReservationServiceUnitTest {
 
     @Mock
     private lateinit var reservationDomainService: ReservationDomainService
+
+    @Mock
+    private lateinit var reservationEventPublisher: ReservationEventPublisher
 
     @Test
     fun `임시 예약시 콘서트 스케줄이 존재하지 않으면 NotFoundException이 발생한다`() {
