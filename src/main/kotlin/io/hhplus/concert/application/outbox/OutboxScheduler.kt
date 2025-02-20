@@ -12,7 +12,7 @@ class OutboxScheduler(
     private val outboxRepository: OutboxRepository,
     private val kafkaTemplate: KafkaTemplate<String, Any>
 ) {
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 3000)
     @Transactional
     fun publishOutbox() {
         outboxRepository.findAllByStatus(Outbox.OutboxStatus.PENDING).forEach { outbox ->
