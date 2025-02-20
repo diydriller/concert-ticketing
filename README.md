@@ -1,17 +1,17 @@
-## [요구사항 문서](./requirement.md)
+## [요구사항 문서](docs/requirement.md)
 
-## [ERD 문서](./ERD.md)
+## [ERD 문서](docs/ERD.md)
 
-## [시퀀스 다이어그램 문서](./sequence_diagram.md)
+## [시퀀스 다이어그램 문서](docs/sequence_diagram.md)
 
-## [스웨거 문서](./swagger.md)
+## [스웨거 문서](docs/swagger.md)
 
-## [회고 문서](./retrospect.md)
+## [회고 문서](docs/retrospect.md)
 
-## [동시성 제어](./lock.md)
+## [동시성 제어](docs/lock.md)
 
-## [redis 적용](./redis.md)
+## [redis 적용](docs/redis.md)
 
-## [인덱스 적용](./index.md)
+## [인덱스 적용](docs/index.md)
 
-## [MSA_트랜잭션](./msa_transaction.md)
+## [MSA_트랜잭션](docs/msa_transaction.md)
