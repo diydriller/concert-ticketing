@@ -17,6 +17,39 @@ kafka 프로젝트는 2011년 Apache Software Foundation에 기부되면서
 * 수평 확장이 가능하다.
 * 내구성이 좋다. 
 
+## producer 옵션
+* **key.serializer**
+  * 메시지 키를 직렬화하는 클래스
+* **value.serializer**
+  * 메시지 값을 직렬화하는 클래스
+* **acks**
+  * producer가 broker로 전송한 데이터가 성공적으로 저장되었는지 여부를 확인한다.
+    * 0이면 확인을 안한다.
+    * 1이면 리더 파티션에 저장되었는지 여부를 확인한다.
+    * -1이면 리더 파티션과 팔로우 파티션에 저장되었는지 여부를 모두 확인한다. **min.insync.replica** 옵션과 함께 쓰여서 지정된 갯수의 파티션에만 저장할 수 도 있다.
+* **linger.ms**
+  * producer는 broker로 메시지를 batch로 보내게 되는데 메시지를 batch로 보내기 전에 대기하는 시간
+* **retries**
+  * 메시지 전송 실패시 재전송하는 횟수 
+
+## consumer 옵션
+* **key.deserializer**
+    * 메시지 키를 역직렬화하는 클래스
+* **value.deserializer**
+    * 메시지 값을 역직렬화하는 클래스
+* **max.poll.records**
+  * poll 메서드를 통해 broker로부터 가지고 오는 레코드의 갯수
+* **group.id**
+  * consumer 그룹 아이디
+* **enable.auto.commit**
+  * commit을 자동으로 할지 수동으로 할지 여부
+* **heartbeat.interval.ms**
+  * heartbeat를 전송하는 시간 간격
+* **session.timeout.ms**
+  * 연결이 끊기는 최대 시간으로 연결이 끊기면 rebalancing이 일어난다.
+* **max.poll.interval.ms**
+  * poll 메서드를 호출하는 간격의 최대 시간으로 초과하면 rebalancing이 일어난다.
+
 # kafka 연동 테스트
 ## docker compose로 구동하기
 카프카 브로커 3대와 zookeeper 1대로 클러스터를 구성했다.
@@ -81,6 +114,27 @@ services:
       ZOOKEEPER_SYNC_LIMIT: 2
     ports:
       - "22181:2181"
+```
+consumer와 producer 옵션을 아래와 같이 지정했다.
+```shell
+spring:
+  kafka:
+    bootstrap-servers: localhost:9093
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: data-platform-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      heartbeat-interval: 10000
+    listener:
+      ack-mode: manual
+
 ```
 ## 카프카 명령어
 docker container로 접속해서 카프카 명령어를 실행시킬 수 있다.
