@@ -5,6 +5,7 @@ build/
 !**/src/test/**/build/
 .env
 .idea/
+docker/data/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
