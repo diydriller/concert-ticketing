@@ -36,6 +36,8 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
     testImplementation("org.testcontainers:kafka:1.19.0")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 }
 
 tasks.withType<KotlinCompile> {
