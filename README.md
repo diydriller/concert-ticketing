@@ -15,3 +15,7 @@
 ## [인덱스 적용](docs/index.md)
 
 ## [MSA_트랜잭션](docs/msa_transaction.md)
+
+## [카프카 적용](docs/kafka.md)
+
+## [성능 테스트](docs/performance_test.md)

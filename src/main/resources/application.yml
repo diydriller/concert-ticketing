@@ -28,6 +28,16 @@ springdoc:
   paths-to-match:
     - /**
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
 ---
 spring.config.activate.on-profile: local
 

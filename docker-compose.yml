@@ -60,3 +60,29 @@ services:
       ZOOKEEPER_SYNC_LIMIT: 2
     ports:
       - "22181:2181"
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/conf/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./docker/data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: always
+
+  # grafana
+  grafana:
+    image: "grafana/grafana"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - ./docker/conf/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./docker/data/grafana:/var/lib/grafana
+    restart: always
+    depends_on:
+      - prometheus
