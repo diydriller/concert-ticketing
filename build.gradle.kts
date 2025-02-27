@@ -33,6 +33,9 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers:1.19.0")
     testImplementation("org.testcontainers:junit-jupiter:1.19.0")
     testImplementation("org.testcontainers:mysql:1.19.0")
+    implementation("org.springframework.kafka:spring-kafka")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
+    testImplementation("org.testcontainers:kafka:1.19.0")
 }
 
 tasks.withType<KotlinCompile> {

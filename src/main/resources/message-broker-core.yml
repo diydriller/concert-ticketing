@@ -1,11 +1,8 @@
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+spring.config.activate.on-profile: local
 
+spring:
   kafka:
-    bootstrap-servers: localhost:9093
+    bootstrap-servers: ${KAFKA_HOST}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -20,16 +17,3 @@ spring:
       heartbeat-interval: 10000
     listener:
       ack-mode: manual
-
-storage:
-  datasource:
-    core:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: jdbc:mysql://localhost:3306/testdb
-      username: root
-      password: rootpass
-
-redis:
-  host: localhost
-  port: 6379
-

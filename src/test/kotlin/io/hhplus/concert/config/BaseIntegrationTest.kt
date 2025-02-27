@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -45,6 +46,22 @@ abstract class BaseIntegrationTest {
         @JvmStatic
         fun stopRedis() {
             redisContainer.stop()
+        }
+
+        @Container
+        private val kafkaContainer = KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.7.1"))
+
+        @BeforeAll
+        @JvmStatic
+        fun startKafka() {
+            kafkaContainer.start()
+            System.setProperty("spring.kafka.bootstrap-servers", kafkaContainer.bootstrapServers)
+        }
+
+        @AfterAll
+        @JvmStatic
+        fun stopKafka() {
+            kafkaContainer.stop()
         }
     }
 }

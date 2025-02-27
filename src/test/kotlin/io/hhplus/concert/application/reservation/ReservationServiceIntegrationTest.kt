@@ -8,13 +8,19 @@ import io.hhplus.concert.exception.ConflictException
 import io.hhplus.concert.infrastructure.concert.ConcertRepository
 import io.hhplus.concert.infrastructure.concert.ConcertScheduleRepository
 import io.hhplus.concert.infrastructure.concert.SeatRepository
+import io.hhplus.concert.infrastructure.external.DataPlatformService
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 
@@ -31,6 +37,9 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
 
     @Autowired
     private lateinit var seatRepository: SeatRepository
+
+    @MockitoBean
+    private lateinit var dataPlatformService: DataPlatformService
 
     @Test
     fun `예약함수 호출시 Reservation이 저장되고 반환된다`() {
@@ -238,5 +247,50 @@ class ReservationServiceIntegrationTest : BaseIntegrationTest() {
         // then
         Assertions.assertEquals(1, successCount.get())
         Assertions.assertEquals(1, failureCount.get())
+    }
+
+    @Test
+    fun `예약함수 호출시 데이터플랫폼 서비스의 함수가 호출된다`() {
+        // given
+        val userId = "4JETAVJVH0SRR"
+        val scheduleId = "4JETAVJVH0SRR"
+        val seatId = "4JETAVJVH0SRR"
+        val concertId = "4JETAVJVH0SRR"
+
+        val concert = Concert(
+            id = concertId,
+            name = "검정치마 콘서트"
+        )
+        concertRepository.save(concert)
+
+        val concertSchedule = ConcertSchedule(
+            id = scheduleId,
+            concert = concert,
+            date = LocalDateTime.of(2025, 2, 20, 18, 0),
+            totalSeatCount = 20
+        )
+        concertScheduleRepository.save(concertSchedule)
+
+        val seat = Seat(
+            id = seatId,
+            number = 1,
+            price = 12000,
+            concertSchedule = concertSchedule
+        )
+        seatRepository.save(seat)
+
+        // when
+        val reservation = reservationService.reserveConcertWithPessimisticLock(
+            ReservationCommand(
+                userId,
+                scheduleId,
+                seatId
+            )
+        )
+
+        // then
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted {
+            verify(dataPlatformService, times(1)).sendReservationData(reservationId = reservation.id)
+        }
     }
 }

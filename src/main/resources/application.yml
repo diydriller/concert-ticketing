@@ -1,10 +1,10 @@
-spring.application.name: hanghae-concert
-spring.profiles.active: local
-
 spring:
+  application.name: hanghae-concert
+  profiles.active: local
   config:
     import:
       - db-core.yml
+      - message-broker-core.yml
 
 server:
   tomcat:

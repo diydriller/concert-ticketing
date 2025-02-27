@@ -3,9 +3,11 @@ package io.hhplus.concert.application.reservation
 import io.hhplus.concert.aop.lock.DistributedLock
 import io.hhplus.concert.domain.concert.ConcertReader
 import io.hhplus.concert.domain.concert.ConcertStore
+import io.hhplus.concert.domain.outbox.OutboxStore
 import io.hhplus.concert.domain.reservation.*
 import io.hhplus.concert.exception.NotFoundException
 import io.hhplus.concert.response.BaseResponseStatus
+import io.hhplus.concert.util.StringUtil.Companion.RESERVE_EVENT_TOPIC
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
@@ -16,7 +18,7 @@ class ReservationService(
     private val concertStore: ConcertStore,
     private val reservationReader: ReservationReader,
     private val reservationDomainService: ReservationDomainService,
-    private val reservationEventPublisher: ReservationEventPublisher
+    private val outboxStore: OutboxStore
 ) {
     @Transactional
     fun reserveConcertWithPessimisticLock(command: ReservationCommand): Reservation {
@@ -38,7 +40,7 @@ class ReservationService(
         concertStore.saveSeat(seat)
         reservationStore.saveReservation(reservation)
 
-        reservationEventPublisher.publish(ReservationEvent.Reserve(reservation.id))
+        outboxStore.save(RESERVE_EVENT_TOPIC, ReservationEvent.Reserve(reservation.id))
 
         return reservationStore.saveReservation(reservation)
     }
